@@ -1,0 +1,3 @@
+1. Autentikasi pengguna tidak diimplementasikan karena tidak diminta pada soal.
+2. Frontend dibuat sederhana untuk menekankan integrasi API.
+3. Firebase Firestore digunakan sebagai database cloud untuk efisiensi pengembangan.
