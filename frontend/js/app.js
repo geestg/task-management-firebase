@@ -1,41 +1,27 @@
 const API_URL = "http://127.0.0.1:5000/tasks/";
 
-const taskList = document.getElementById("taskList");
+const taskListBody = document.querySelector("#taskList tbody");
 const form = document.getElementById("taskForm");
 
 async function fetchTasks() {
     const res = await fetch(API_URL);
     const tasks = await res.json();
-    taskList.innerHTML = "";
+    taskListBody.innerHTML = "";
 
     tasks.forEach(task => {
-        const li = document.createElement("li");
+        const tr = document.createElement("tr");
 
-        const info = document.createElement("div");
-        info.className = "task-info";
-        info.innerHTML = `
-            <strong>${task.title}</strong>
-            <span class="badge ${task.status}">${task.status}</span>
-            <div>${task.description}</div>
+        tr.innerHTML = `
+            <td>${task.title}</td>
+            <td>${task.description}</td>
+            <td><span class="badge ${task.status}">${task.status}</span></td>
+            <td class="actions">
+                <button onclick="updateStatus('${task.id}', '${task.status}')">Next Status</button>
+                <button onclick="deleteTask('${task.id}')">Delete</button>
+            </td>
         `;
 
-        const actions = document.createElement("div");
-        actions.className = "actions";
-
-        const statusBtn = document.createElement("button");
-        statusBtn.textContent = "Next Status";
-        statusBtn.onclick = () => updateStatus(task);
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "Delete";
-        deleteBtn.onclick = () => deleteTask(task.id);
-
-        actions.appendChild(statusBtn);
-        actions.appendChild(deleteBtn);
-
-        li.appendChild(info);
-        li.appendChild(actions);
-        taskList.appendChild(li);
+        taskListBody.appendChild(tr);
     });
 }
 
@@ -45,21 +31,18 @@ function nextStatus(current) {
     return "TODO";
 }
 
-async function updateStatus(task) {
-    const newStatus = nextStatus(task.status);
-
-    await fetch(API_URL + task.id, {
+async function updateStatus(id, currentStatus) {
+    const newStatus = nextStatus(currentStatus);
+    await fetch(API_URL + id, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus })
     });
-
     fetchTasks();
 }
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const title = document.getElementById("title").value;
     const description = document.getElementById("description").value;
 
@@ -74,6 +57,7 @@ form.addEventListener("submit", async (e) => {
 });
 
 async function deleteTask(id) {
+    if (!confirm("Are you sure you want to delete this task?")) return;
     await fetch(API_URL + id, { method: "DELETE" });
     fetchTasks();
 }
